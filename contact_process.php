@@ -1,37 +1,46 @@
 <?php
 
-    $to = "spn8@spondonit.com";
-    $from = $_REQUEST['email'];
-    $name = $_REQUEST['name'];
-    $subject = $_REQUEST['subject'];
-    $number = $_REQUEST['number'];
-    $cmessage = $_REQUEST['message'];
+$errors = [];
+$errorMessage = '';
 
-    $headers = "From: $from";
-	$headers = "From: " . $from . "\r\n";
-	$headers .= "Reply-To: ". $from . "\r\n";
-	$headers .= "MIME-Version: 1.0\r\n";
-	$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+if (!empty($_POST)) {
+   $name = $_POST['name'];
+   $email = $_POST['email'];
+   $message = $_POST['message'];
 
-    $subject = "You have a message from your Bitmap Photography.";
+   if (empty($name)) {
+       $errors[] = 'Name is empty';
+   }
 
-    $logo = 'img/logo.png';
-    $link = '#';
+   if (empty($email)) {
+       $errors[] = 'Email is empty';
+   } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+       $errors[] = 'Email is invalid';
+   }
 
-	$body = "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><title>Express Mail</title></head><body>";
-	$body .= "<table style='width: 100%;'>";
-	$body .= "<thead style='text-align: center;'><tr><td style='border:none;' colspan='2'>";
-	$body .= "<a href='{$link}'><img src='{$logo}' alt=''></a><br><br>";
-	$body .= "</td></tr></thead><tbody><tr>";
-	$body .= "<td style='border:none;'><strong>Name:</strong> {$name}</td>";
-	$body .= "<td style='border:none;'><strong>Email:</strong> {$from}</td>";
-	$body .= "</tr>";
-	$body .= "<tr><td style='border:none;'><strong>Subject:</strong> {$csubject}</td></tr>";
-	$body .= "<tr><td></td></tr>";
-	$body .= "<tr><td colspan='2' style='border:none;'>{$cmessage}</td></tr>";
-	$body .= "</tbody></table>";
-	$body .= "</body></html>";
+   if (empty($message)) {
+       $errors[] = 'Message is empty';
+   }
 
-    $send = mail($to, $subject, $body, $headers);
+   if (empty($errors)) {
+       $toEmail = 'example@example.com';
+       $emailSubject = 'New email from your contact form';
+       $headers = ['From' => $email, 'Reply-To' => $email, 'Content-type' => 'text/html; charset=utf-8'];
+       $bodyParagraphs = ["Name: {$name}", "Email: {$email}", "Message:", $message];
+       $body = join(PHP_EOL, $bodyParagraphs);
+
+       if (mail($toEmail, $emailSubject, $body, $headers)) 
+
+           header('Location: thank-you.html');
+       } else {
+           $errorMessage = 'Oops, something went wrong. Please try again later';
+       }
+
+   } else {
+
+       $allErrors = join('<br/>', $errors);
+       $errorMessage = "<p style='color: red;'>{$allErrors}</p>";
+   }
+
 
 ?>
